@@ -7,13 +7,13 @@ clean:
 	find . | grep -E "(__pycache__|\.mypy_cache|\.pyc|\.pyo$$)" | xargs rm -rf
 
 test:
-	pipenv run pytest --black --mypy --color yes
+	pipenv run pytest --mypy --color yes
 
 watch:
 	openscad output/whitebox.scad &
 	echo whitebox.py | entr -s 'make compile'
 
-compile: test
+compile:
 	pipenv run python3 whitebox.py
 
 build:
