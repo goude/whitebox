@@ -27,9 +27,9 @@ class Measurements:
     fibcube_top_margin = 1.00
     fibcube_side = 10.0
     fibcube_height = fibcube_top_margin * 3
-    fibcube_wall = 1.0
+    fibcube_wall = 0.5
     fibcube_plopp = fibcube_side - (fibcube_wall * 2)
-    fibcube_extra = 0.35
+    fibcube_extra = 0.30
 
 
 m = Measurements()
