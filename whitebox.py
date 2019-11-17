@@ -24,29 +24,39 @@ class Measurements:
 
     diameter_margin = 0.1
 
-    fibcube_side = 10.0
-    fibcube_wall = 2.30
     fibcube_top_margin = 1.00
+    fibcube_side = 10.0
+    fibcube_height = fibcube_top_margin * 3
+    fibcube_wall = 1.0
     fibcube_plopp = fibcube_side - (fibcube_wall * 2)
+    fibcube_extra = 0.35
 
 
 m = Measurements()
 
 
-def fibcube(extra=0.0):
-    outside = cube(m.fibcube_side, center=False)
+def fibcube():
+    outside = cube([m.fibcube_side, m.fibcube_side, m.fibcube_height], center=False)
 
     top = translate(
-        [m.fibcube_wall + extra / 2, m.fibcube_wall + extra / 2, m.fibcube_side]
+        [
+            m.fibcube_wall + m.fibcube_extra / 2,
+            m.fibcube_wall + m.fibcube_extra / 2,
+            m.fibcube_height,
+        ]
     )(
         cube(
-            [m.fibcube_plopp - extra, m.fibcube_plopp - extra, m.fibcube_top_margin],
+            [
+                m.fibcube_plopp - m.fibcube_extra,
+                m.fibcube_plopp - m.fibcube_extra,
+                m.fibcube_top_margin,
+            ],
             center=False,
         )
     )
 
     inside = translate([m.fibcube_wall, m.fibcube_wall, -m.fibcube_wall])(
-        cube([m.fibcube_plopp, m.fibcube_plopp, m.fibcube_side], center=False)
+        cube([m.fibcube_plopp, m.fibcube_plopp, m.fibcube_height], center=False)
     )
 
     fc = outside + top
@@ -55,10 +65,22 @@ def fibcube(extra=0.0):
 
 
 def fibcubes():
-    f = fibcube(extra=0)
-    for i in range(4):
-        f += right(i * 20)(fibcube(extra=i * 0.1))
-    return f
+    g = translate([0, 0, 0])
+    for x in range(2):
+        g += right(x * m.fibcube_side)(fibcube())
+
+    h = translate([0, 0, 0])
+    for x in range(2):
+        for y in range(2):
+            h += forward(y * m.fibcube_side)(right(x * m.fibcube_side)(fibcube()))
+    h = right(28)(h)
+
+    i = translate([0, 0, 0])
+    for x in range(2):
+        i += right(x * (m.fibcube_side + 3))(fibcube())
+    i = forward(13)(i)
+
+    return g + h + i
 
 
 def board_cylinder():
