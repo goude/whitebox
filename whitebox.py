@@ -1,8 +1,8 @@
 # from solid.objects import circle, cube, cylinder, difference, polygon, translate, union
 # from solid.utils import bearing, nut, right, screw_dimensions
 from solid import OpenSCADObject, scad_render_to_file
-from solid.objects import circle, cube, cylinder, linear_extrude, part
-from solid.utils import fillet_2d, forward, hole, left, screw_dimensions, up
+from solid.objects import circle, cube, cylinder, linear_extrude, part, translate
+from solid.utils import fillet_2d, forward, hole, left, right, screw_dimensions, up
 
 SEGMENTS = 48
 
@@ -24,8 +24,41 @@ class Measurements:
 
     diameter_margin = 0.1
 
+    fibcube_side = 10.0
+    fibcube_wall = 2.30
+    fibcube_top_margin = 1.00
+    fibcube_plopp = fibcube_side - (fibcube_wall * 2)
+
 
 m = Measurements()
+
+
+def fibcube(extra=0.0):
+    outside = cube(m.fibcube_side, center=False)
+
+    top = translate(
+        [m.fibcube_wall + extra / 2, m.fibcube_wall + extra / 2, m.fibcube_side]
+    )(
+        cube(
+            [m.fibcube_plopp - extra, m.fibcube_plopp - extra, m.fibcube_top_margin],
+            center=False,
+        )
+    )
+
+    inside = translate([m.fibcube_wall, m.fibcube_wall, -m.fibcube_wall])(
+        cube([m.fibcube_plopp, m.fibcube_plopp, m.fibcube_side], center=False)
+    )
+
+    fc = outside + top
+    fc = fc + hole()(inside)
+    return fc
+
+
+def fibcubes():
+    f = fibcube(extra=0)
+    for i in range(4):
+        f += right(i * 20)(fibcube(extra=i * 0.1))
+    return f
 
 
 def board_cylinder():
@@ -75,8 +108,9 @@ def enclosure():
 
 
 if __name__ == "__main__":
-    item = enclosure() + up(m.wall_thickness)(board_cylinder())
+    # item = enclosure() + up(m.wall_thickness)(board_cylinder())
     # item = enclosure()
+    item = fibcubes()
     file_out = scad_render_to_file(
         item, filepath="output/whitebox.scad", file_header=f"$fn = {SEGMENTS};",
     )
