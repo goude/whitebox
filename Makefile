@@ -11,7 +11,7 @@ test:
 
 watch:
 	openscad output/whitebox.scad &
-	echo whitebox.py | entr -s 'make compile'
+	ls *.py | entr -s 'make compile'
 
 compile:
 	pipenv run python3 whitebox.py

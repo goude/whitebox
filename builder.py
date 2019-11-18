@@ -2,7 +2,7 @@ from typing import Tuple
 
 from solid import OpenSCADObject, scad_render_to_file
 from solid.objects import translate
-from solid.utils import forward, right, up
+from solid.utils import forward, hole, part, right, up
 
 P3 = Tuple[float, float, float]
 Vec3 = P3
@@ -35,11 +35,27 @@ class SolidBuilder:
         self._oso = up(d)(self._oso)
         return self
 
+    def hole(self, sb: "SolidBuilder") -> "SolidBuilder":
+        self._oso = self._oso - hole()(sb._oso)
+        return self
+
+    def part(self) -> "SolidBuilder":
+        self._oso = part()(self._oso)
+        return self
+
     def render(self) -> OpenSCADObject:
         return self._oso
 
     def clone(self) -> "SolidBuilder":
         return SolidBuilder(self._oso.copy())
+
+    def __add__(self, sb: "SolidBuilder") -> "SolidBuilder":
+        self._oso += sb._oso
+        return self
+
+    def __sub__(self, sb: "SolidBuilder") -> "SolidBuilder":
+        self._oso -= sb._oso
+        return self
 
     def render_to_file(self, filepath):
         file_out = scad_render_to_file(
