@@ -183,10 +183,11 @@ def bottom(rows=5, columns=8, height=30) -> SolidBuilder:
         h.add(p)
     g += h
 
+    brim = 5
     inner_brim = (
-        square_pipe_part(width - marg, depth - marg, 5.0, 3.0)
-        .right(marg_half)
-        .forward(marg_half)
+        square_pipe_part(width - brim, depth - brim, 5.0, 3.0)
+        .right(brim / 2)
+        .forward(brim / 2)
     )
     g += inner_brim
     return g
