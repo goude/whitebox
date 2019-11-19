@@ -40,7 +40,7 @@ def cylinder(radius, length, segments=48):
 
 
 def nut(length, diameter):
-    return cylinder(radius=diameter / 2, length=length, segments=48)
+    return cylinder(radius=diameter / 2, length=length, segments=6)
 
 
 def square_pipe_part(
@@ -57,21 +57,63 @@ def square_pipe_part(
     return g.part()
 
 
-def pillar(width, depth, height, cutout) -> SolidBuilder:
+def pillar(
+    width, depth, height, cutout, pillar_index, is_right, is_far
+) -> SolidBuilder:
     g = empty()
     g.add(box(width, depth, height))
 
+    cutout_shapes = [
+        box(cutout, cutout, height),
+        box(cutout, cutout, height).forward(depth - cutout),
+        box(cutout, cutout, height).forward(depth - cutout).right(width - cutout),
+        box(cutout, cutout, height).right(width - cutout),
+    ]
+
+    # nut holes
+    m3_nut_thickness = 2.40
+    m3_width_across_corners = 6.35
+    m3_width_across_flats = 5.50
+    m3_diameter = 3.1
+
     cutouts = (
-        box(cutout, cutout, height)
-        + box(cutout, cutout, height).forward(depth - cutout)
-        + box(cutout, cutout, height).right(depth - cutout)
-        + box(cutout, cutout, height).forward(depth - cutout).right(depth - cutout)
-        + nut(length=20, diameter=3.1)
+        cylinder(length=20, radius=m3_diameter / 2)
         .up(height - 20)
         .forward(depth / 2)
         .right(depth / 2)
     )
+
+    for i, c in enumerate(cutout_shapes):
+        if i != pillar_index:
+            cutouts += c
+
     g -= cutouts
+
+    n = nut(length=m3_nut_thickness, diameter=m3_width_across_corners)
+    n += cylinder(length=20, radius=m3_diameter / 2).down(10)
+
+    n2 = n.clone().rotate(90, [0, 1, 0])
+    n3 = n2.clone().rotate(90, [0, 0, 1])
+
+    b = box(m3_width_across_flats, m3_width_across_flats, m3_nut_thickness)
+
+    b.right(width - m3_width_across_flats / 2).forward(
+        depth / 2 - m3_width_across_flats / 2
+    ).up(25)
+    n.right(width / 2).forward(depth / 2).up(25)
+    g -= n + b
+
+    n2.forward(depth / 2).up(10)
+
+    if not is_right:
+        n2.right(width - m3_nut_thickness)
+
+    n3.forward(depth - m3_nut_thickness).up(20).right(width / 2)
+
+    if is_far:
+        n3.back(depth - m3_nut_thickness)
+
+    g -= n2 + n3
     g.part()
     return g
 
@@ -83,15 +125,18 @@ def bottom(rows=5, columns=8, height=30) -> SolidBuilder:
 
     width = columns * fcs
     depth = rows * fcs
-    base_plate = square_pipe_part(width, depth, m.wall_thickness, fcs / 2)
 
-    marg = m.wall_thickness
-    marg_half = m.wall_thickness / 2
+    inner_size = 8
+
+    base_plate = square_pipe_part(width, depth, m.wall_thickness, inner_size)
+
+    marg = m.wall_thickness * 2
+    marg_half = marg / 2
 
     inner_indentation = (
-        box(width - fcs + marg, depth - fcs + marg, 20)
-        .right(fcs / 2 - marg_half)
-        .forward(fcs / 2 - marg_half)
+        box(width - inner_size * 2 + marg, depth - inner_size * 2 + marg, 5)
+        .right(inner_size - marg_half)
+        .forward(inner_size - marg_half)
         .up(marg_half)
     )
 
@@ -109,16 +154,32 @@ def bottom(rows=5, columns=8, height=30) -> SolidBuilder:
     g.part()
 
     h = empty()
-    p = pillar(fcs / 2, fcs / 2, height, marg_half)
-    h.add(p + p.clone().right(width - fcs / 2))
+    pillar_side = 8.0
+    for i, (x, y) in enumerate(
+        [(False, False), (False, True), (True, True), (True, False)]
+    ):
+        p = pillar(
+            pillar_side,
+            pillar_side,
+            height,
+            marg_half,
+            pillar_index=i,
+            is_right=x,
+            is_far=y,
+        )
+
+        if x:
+            p.right(width - pillar_side)
+        if y:
+            p.forward(depth - pillar_side)
+
+        h.add(p)
     g += h
-    g += h.clone().forward(depth - fcs / 2)
 
     inner_brim = (
-        square_pipe_part(width - marg, depth - marg, marg, marg)
+        square_pipe_part(width - marg, depth - marg, 5.0, 3.0)
         .right(marg_half)
         .forward(marg_half)
-        .up(marg)
     )
     g += inner_brim
     return g

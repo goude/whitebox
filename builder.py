@@ -1,8 +1,8 @@
 from typing import Tuple
 
 from solid import OpenSCADObject, scad_render_to_file
-from solid.objects import translate
-from solid.utils import forward, hole, part, right, up
+from solid.objects import rotate, translate
+from solid.utils import back, down, forward, hole, left, part, right, up
 
 P3 = Tuple[float, float, float]
 Vec3 = P3
@@ -27,12 +27,24 @@ class SolidBuilder:
         self._oso = right(d)(self._oso)
         return self
 
+    def left(self, d: float) -> "SolidBuilder":
+        self._oso = left(d)(self._oso)
+        return self
+
     def forward(self, d: float) -> "SolidBuilder":
         self._oso = forward(d)(self._oso)
         return self
 
+    def back(self, d: float) -> "SolidBuilder":
+        self._oso = back(d)(self._oso)
+        return self
+
     def up(self, d: float) -> "SolidBuilder":
         self._oso = up(d)(self._oso)
+        return self
+
+    def down(self, d: float) -> "SolidBuilder":
+        self._oso = down(d)(self._oso)
         return self
 
     def hole(self, sb: "SolidBuilder") -> "SolidBuilder":
@@ -41,6 +53,10 @@ class SolidBuilder:
 
     def part(self) -> "SolidBuilder":
         self._oso = part()(self._oso)
+        return self
+
+    def rotate(self, a: float, v) -> "SolidBuilder":
+        self._oso = rotate(a, v)(self._oso)
         return self
 
     def render(self) -> OpenSCADObject:
