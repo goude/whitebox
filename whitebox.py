@@ -97,13 +97,18 @@ def pillar(
 
     b = box(m3_width_across_flats, m3_width_across_flats, m3_nut_thickness)
 
-    b.right(width - m3_width_across_flats / 2).forward(
-        depth / 2 - m3_width_across_flats / 2
-    ).up(25)
+    delta = 0.0001
+
+    if is_right:
+        pass
+        # b.left(delta)
+    else:
+        b.right(width - m3_width_across_flats / 2)
+
+    b.forward(depth / 2 - m3_width_across_flats / 2)
+    b.up(25)
     n.right(width / 2).forward(depth / 2).up(25)
     g -= n + b
-
-    delta = 0.0001
 
     n2.forward(depth / 2).up(10)
 
