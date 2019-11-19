@@ -103,15 +103,17 @@ def pillar(
     n.right(width / 2).forward(depth / 2).up(25)
     g -= n + b
 
+    delta = 0.0001
+
     n2.forward(depth / 2).up(10)
 
     if not is_right:
-        n2.right(width - m3_nut_thickness)
+        n2.right(width - m3_nut_thickness + delta)
 
-    n3.forward(depth - m3_nut_thickness).up(20).right(width / 2)
+    n3.forward(depth - m3_nut_thickness + delta).up(20).right(width / 2)
 
     if is_far:
-        n3.back(depth - m3_nut_thickness)
+        n3.back(depth - m3_nut_thickness + delta * 5)
 
     g -= n2 + n3
     g.part()
@@ -130,14 +132,14 @@ def bottom(rows=5, columns=8, height=30) -> SolidBuilder:
 
     base_plate = square_pipe_part(width, depth, m.wall_thickness, inner_size)
 
-    marg = m.wall_thickness * 2
+    marg = 2.0
     marg_half = marg / 2
 
     inner_indentation = (
         box(width - inner_size * 2 + marg, depth - inner_size * 2 + marg, 5)
         .right(inner_size - marg_half)
         .forward(inner_size - marg_half)
-        .up(marg_half)
+        .up(m.wall_thickness / 2)
     )
 
     g.add(base_plate)
