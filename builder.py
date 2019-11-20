@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from solid import OpenSCADObject, scad_render_to_file
-from solid.objects import rotate, translate
+from solid.objects import mirror, rotate, translate
 from solid.utils import back, down, forward, hole, left, part, right, up
 
 P3 = Tuple[float, float, float]
@@ -14,10 +14,6 @@ class SolidBuilder:
     def __init__(self, o: OpenSCADObject = None) -> None:
         self._oso = translate([0, 0, 0])
         self._oso.add(o)
-
-    def set_translation(self, v: Vec3) -> "SolidBuilder":
-        self._oso.add_param("v", v)
-        return self
 
     def add(self, sb: "SolidBuilder") -> "SolidBuilder":
         self._oso.add(sb.render())
@@ -53,6 +49,14 @@ class SolidBuilder:
 
     def part(self) -> "SolidBuilder":
         self._oso = part()(self._oso)
+        return self
+
+    def translate(self, v: Vec3) -> "SolidBuilder":
+        self._oso = translate(v)(self._oso)
+        return self
+
+    def mirror(self, v) -> "SolidBuilder":
+        self._oso = mirror(v)(self._oso)
         return self
 
     def rotate(self, a: float, v) -> "SolidBuilder":
