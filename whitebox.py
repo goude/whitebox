@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import measurements as m
 from builder import SolidBuilder, empty, node
-from parts import box, cylinder, hexnut, round_pipe_part, square_pipe_part
+from parts import box, boxoid, cylinder, hexnut, round_pipe_part, square_pipe_part
 
 # Measurements
 hole_extra = 0.1
@@ -63,7 +63,7 @@ def pillar(width: float, depth: float, height: float) -> SolidBuilder:
     bottom_nut.rotate(90, [0, 1, 0])
     mid_nut = bottom_nut.clone().rotate(90, [0, 0, 1])
     mid_nut.forward(depth - m3_nut_thickness + pillar_delta_correction).up(
-        height - 15
+        height / 2
     ).right(width / 2)
 
     bottom_nut.forward(depth / 2).up(10)
@@ -114,59 +114,70 @@ def whitebox_part(rows=5, columns=8, height=50) -> SolidBuilder:
         .forward(brim_inset)
     )
 
+    # Lid
+    lid_group = empty()
+    lid_plate = box(width=width, depth=depth, height=box_wall_thickness)
+
+    # Lid shaft hole
+    shaft_cyl = cylinder(
+        diameter=m3_head_hole_diameter, length=m3_head_hole_height + box_wall_thickness
+    )
+    inner_cyl = cylinder(
+        diameter=m3_shaft_diameter_with_extra, length=m3_head_hole_height
+    )
+    inner_cyl.down(box_wall_thickness)
+
+    hole_part = shaft_cyl + inner_cyl
+    hole_part.right(5).forward(5).down(m3_head_hole_height - box_wall_thickness)
+
+    # Lid shaft solid parts
+    outer_cyl = cylinder(
+        diameter=m3_head_hole_tube_diameter, length=m3_head_hole_height
+    )
+    lower_disk = cylinder(
+        diameter=m3_head_hole_tube_diameter, length=box_wall_thickness
+    ).down(box_wall_thickness)
+
+    plug_part = outer_cyl + lower_disk
+    plug_part.right(5).forward(5).down(m3_head_hole_height - box_wall_thickness)
+
+    lid_group += lid_plate + plug_part
+    lid_group.hole(hole_part)  # here, difference does not work
+
+    lid_height = height + 20
+    lid_group.up(lid_height)
+
+    g.add(lid_group)
+
     # Pillar
     g += pillar(width=inner_size, depth=inner_size, height=height)
 
     # Translate and mirror
     g.left(width / 2)
     g.back(depth / 2)
-    g += g.clone().mirror([0, 1, 0])
-    g += g.clone().mirror([1, 0, 0])
-    return g
+    g.reflect_x()
+    g.reflect_y()
 
-    # FIXME:Mirror
-    # Top in the bottom - ho ho ho
-    top_group = empty()
-    top_plate = box(width=width, depth=depth, height=box_wall_thickness)
+    # Lid cutout for screen
+    lid_hole_offset = 0.1
 
-    plug_group = empty()
-    hole_group = empty()
-    far_right = []
-    for far, right in far_right:
-        shaft_cyl = cylinder(diameter=m3_head_hole_diameter, length=m3_head_hole_height)
-        inner_cyl = cylinder(
-            diameter=m3_shaft_diameter_with_extra, length=m3_head_hole_height
-        )
-        inner_cyl.down(box_wall_thickness)
-        hole_part = shaft_cyl + inner_cyl
-        hole_part.right(5).forward(5).down(m3_head_hole_height - box_wall_thickness)
+    inky_screen = box(
+        width=48.5 + lid_hole_offset,
+        depth=23.8 + lid_hole_offset,
+        height=5.0,
+        center=True,
+    )
+    inky_screen.up(5)
+    rpi_board = boxoid(
+        width=65 + lid_hole_offset,
+        depth=30 + lid_hole_offset,
+        height=3,
+        corner_radius=3.0,
+    )
+    lid_cutout = rpi_board + inky_screen
+    lid_cutout.up(lid_height - 5.5)
+    g -= lid_cutout
 
-        outer_cyl = cylinder(
-            diameter=m3_head_hole_tube_diameter, length=m3_head_hole_height
-        )
-        lower_disk = cylinder(
-            diameter=m3_head_hole_tube_diameter, length=box_wall_thickness
-        ).down(box_wall_thickness)
-
-        plug_part = outer_cyl + lower_disk
-        plug_part.right(5).forward(5).down(m3_head_hole_height - box_wall_thickness)
-        if far:
-            plug_part.forward(depth - 10)
-            hole_part.forward(depth - 10)
-        if right:
-            plug_part.right(width - 10)
-            hole_part.right(width - 10)
-
-        plug_group += plug_part
-        hole_group += hole_part
-
-    top_group += top_plate + plug_group
-    top_group -= hole_group
-
-    top_up = 40
-    top_group.up(top_up)
-
-    g.add(top_group)
     return g
 
 
