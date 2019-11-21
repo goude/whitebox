@@ -60,6 +60,11 @@ def pillar(width: float, depth: float, height: float) -> SolidBuilder:
     # Bottom and mid nut holes
     bottom_nut = hexnut(length=m3_nut_thickness, diameter=m3_nut_width_across_corners)
     bottom_nut += cylinder(length=20, diameter=m3_shaft_diameter_with_extra).down(10)
+    bottom_nut += cylinder(
+        length=m3_head_hole_height, diameter=m3_head_hole_diameter + hole_extra
+    ).down(
+        6
+    )  # magic adjustment...
     bottom_nut.rotate(90, [0, 1, 0])
     mid_nut = bottom_nut.clone().rotate(90, [0, 0, 1])
     mid_nut.forward(depth - m3_nut_thickness + pillar_delta_correction).up(
@@ -70,7 +75,7 @@ def pillar(width: float, depth: float, height: float) -> SolidBuilder:
     bottom_nut.right(width - m3_nut_thickness + pillar_delta_correction)
 
     g -= bottom_nut + mid_nut
-
+    # g += bottom_nut
     # Move pillar
     g.forward(box_wall_thickness)
     g.right(box_wall_thickness)
@@ -81,7 +86,7 @@ def pillar(width: float, depth: float, height: float) -> SolidBuilder:
     return g
 
 
-def whitebox_part(rows=5, columns=8, height=50) -> SolidBuilder:
+def whitebox_part(rows=5, columns=8, height=30) -> SolidBuilder:
     g = empty()
 
     base_unit = 10.0  # 1 cm
