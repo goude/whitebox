@@ -14,7 +14,7 @@ watch:
 	ls *.py | entr -s 'make compile'
 
 compile:
-	pipenv run python3 whitebox.py
+	pipenv run python3 handheld.py
 
 build:
 	openscad -o output/whitebox.stl output/whitebox.scad

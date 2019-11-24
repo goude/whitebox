@@ -1,7 +1,7 @@
 from solid.objects import circle, cube
 from solid.utils import linear_extrude
 
-from builder import SolidBuilder, empty, node
+from .builder import SolidBuilder, empty, node
 
 
 def box(

@@ -1,5 +1,5 @@
-from builder import SolidBuilder, empty
-from parts import box, boxoid, cylinder, hexnut, round_pipe_part
+from whitebox.builder import SolidBuilder, empty
+from whitebox.parts import box, boxoid, cylinder, hexnut, round_pipe_part
 
 # Measurements
 hole_extra = 0.1
@@ -130,7 +130,7 @@ def lid_part(height, width, depth) -> SolidBuilder:
     return lid_group
 
 
-def whitebox_part(rows=5, columns=8, height=30) -> SolidBuilder:
+def whitebox_part(rows=8, columns=8, height=20) -> SolidBuilder:
     g = empty()
 
     base_unit = 10.0  # 1 cm
@@ -230,6 +230,8 @@ def refinements():
     # 18 4
     lid_cutout = inky_screen_board + inky_screen + inky_wire_indentation  # + rpi_board
     # lid_cutout.up(lid_height - 5.5)
+
+    lid_cutout.forward(15)
     return lid_cutout
 
 
