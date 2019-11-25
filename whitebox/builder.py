@@ -17,32 +17,86 @@ class SolidBuilder:
         else:
             self._oso = o
 
+        self.set_center()
+        self.set_origin()
+
+    def set_center(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
+        self._center_x = x
+        self._center_y = y
+        self._center_z = z
+
+    def set_origin(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
+        self._origin_x = x
+        self._origin_y = y
+        self._origin_z = z
+
+    def align_center(self) -> "SolidBuilder":
+        self.left(self._center_x)
+        self.back(self._center_y)
+        self.down(self._center_z)
+        return self
+
+    def align_origin(self) -> "SolidBuilder":
+        self.left(self._origin_x)
+        self.back(self._origin_y)
+        self.down(self._origin_z)
+        return self
+
+    def align_center_above(self) -> "SolidBuilder":
+        self.left(self._center_x)
+        self.back(self._center_y)
+        self.down(self._origin_z)
+        return self
+
     def add(self, sb: "SolidBuilder") -> "SolidBuilder":
         self._oso.add(sb.render())
         return self
 
     def right(self, d: float) -> "SolidBuilder":
+        self._center_x += d
+        self._origin_x += d
         self._oso = right(d)(self._oso)
         return self
 
     def left(self, d: float) -> "SolidBuilder":
+        self._center_x -= d
+        self._origin_x -= d
         self._oso = left(d)(self._oso)
         return self
 
     def forward(self, d: float) -> "SolidBuilder":
+        self._center_y += d
+        self._origin_y += d
         self._oso = forward(d)(self._oso)
         return self
 
     def back(self, d: float) -> "SolidBuilder":
+        self._center_y -= d
+        self._origin_y -= d
         self._oso = back(d)(self._oso)
         return self
 
     def up(self, d: float) -> "SolidBuilder":
+        self._center_z += d
+        self._origin_z += d
         self._oso = up(d)(self._oso)
         return self
 
     def down(self, d: float) -> "SolidBuilder":
+        self._center_z -= d
+        self._origin_z -= d
         self._oso = down(d)(self._oso)
+        return self
+
+    def translate(self, v: Vec3) -> "SolidBuilder":
+        self._center_x += v[0]
+        self._center_y += v[1]
+        self._center_z += v[2]
+        self._origin_x += v[0]
+        self._origin_y += v[1]
+        self._origin_z += v[2]
+
+        self._oso = translate(v)(self._oso)
         return self
 
     def hole(self, sb: "SolidBuilder") -> "SolidBuilder":
@@ -51,10 +105,6 @@ class SolidBuilder:
 
     def part(self) -> "SolidBuilder":
         self._oso = part()(self._oso)
-        return self
-
-    def translate(self, v: Vec3) -> "SolidBuilder":
-        self._oso = translate(v)(self._oso)
         return self
 
     def minkowski(self) -> "SolidBuilder":
